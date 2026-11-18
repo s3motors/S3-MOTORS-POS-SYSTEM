@@ -1082,29 +1082,44 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       syncStateToCloud();
     }
-
+const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBI5-cHVnJYMY7_APISxtMUhNC70lqrOyo",
+  authDomain: "s3-motors-pos.firebaseapp.com",
+  projectId: "s3-motors-pos",
+  storageBucket: "s3-motors-pos.firebasestorage.app",
+  messagingSenderId: "1071503701636",
+  appId: "1:1071503701636:web:8f217ca4e9ce05d18574d1"
+    };
     // ==================== FIREBASE CLOUD & REALTIME SYNC ====================
-    function initFirebaseFromSavedConfig() {
+   function initFirebaseFromSavedConfig() {
       const cfgRaw = localStorage.getItem('s3_firebase_config');
+      let cfg = DEFAULT_FIREBASE_CONFIG;
+
       if (cfgRaw) {
         document.getElementById('firebase-config-input').value = cfgRaw;
         try {
-          const cfg = JSON.parse(cfgRaw);
+          cfg = JSON.parse(cfgRaw);
+        } catch (e) {}
+      } else {
+        document.getElementById('firebase-config-input').value = JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2);
+      }
+
+      try {
+        if (cfg && cfg.apiKey) {
           if (!firebase.apps.length) {
             firebase.initializeApp(cfg);
           }
           firestoreDb = firebase.firestore();
           startFirestoreRealtimeListener();
           updateCloudStatusUI(true, 'Firebase Cloud Connected (Live)');
-        } catch (err) {
-          console.error('Firebase init failed:', err);
-          updateCloudStatusUI(false, 'Local + Multi-Tab Live Sync');
+        } else {
+          updateCloudStatusUI(false, 'Firebase Config Not Set');
         }
-      } else {
-        updateCloudStatusUI(true, 'Real-Time Sync Active');
+      } catch (err) {
+        console.error('Firebase init failed:', err);
+        updateCloudStatusUI(false, 'Local + Multi-Tab Live Sync');
       }
     }
-
     function startFirestoreRealtimeListener() {
       if (!firestoreDb) return;
       if (unsubscribeFirestore) unsubscribeFirestore();
