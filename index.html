@@ -1207,7 +1207,14 @@
 
     // ==================== FIREBASE CLOUD & REALTIME SYNC ====================
     // Optional default Firebase Web Config (paste your JSON object here so every phone/browser connects automatically)
-    const DEFAULT_FIREBASE_CONFIG = null;
+   const firebaseConfig = {
+  apiKey: "AIzaSyBI5-cHVnJYMY7_APISxtMUhNC70lqrOyo",
+  authDomain: "s3-motors-pos.firebaseapp.com",
+  projectId: "s3-motors-pos",
+  storageBucket: "s3-motors-pos.firebasestorage.app",
+  messagingSenderId: "1071503701636",
+  appId: "1:1071503701636:web:8f217ca4e9ce05d18574d1"
+};
 
     function getEffectiveFirebaseConfigRaw() {
       const saved = (localStorage.getItem('s3_firebase_config') || '').trim();
