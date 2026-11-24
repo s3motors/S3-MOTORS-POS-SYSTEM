@@ -98,7 +98,7 @@
           <div class="w-14 h-14 rounded-full bg-black border border-gold/50 overflow-hidden flex items-center justify-center shrink-0 shadow" data-s3-logo-slot="bill-modal"></div>
           <div>
             <h3 class="text-lg font-black gold-text-gradient tracking-tight">S3 MOTORS</h3>
-            <p class="text-[11px] font-bold text-gold/90 tracking-widest uppercase">BIKE & THREE WHEEL PARTS</p>
+            <p class="text-[11px] font-bold text-gold/90 tracking-widest uppercase">BIKE &amp; THREE WHEEL PARTS</p>
             <p id="modal-bill-meta" class="text-[11px] text-gray-400 font-mono mt-0.5"></p>
           </div>
         </div>
@@ -134,13 +134,14 @@
     </div>
   </div>
 
+
   <!-- Live Camera Capture Modal (for WebView / Browsers where input capture opens Gallery) -->
   <div id="live-camera-modal" class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/90 backdrop-blur-sm p-3 sm:p-5">
     <div class="bg-onyx border-2 border-gold/50 rounded-3xl max-w-md w-full p-4 sm:p-5 shadow-2xl space-y-3">
       <div class="flex items-center justify-between border-b border-gold/25 pb-2.5">
         <div>
           <h3 class="text-sm sm:text-base font-black text-gold">📷 Live Rear Camera</h3>
-          <p class="text-[11px] text-gray-400">Position spare part inside frame & tap Capture</p>
+          <p class="text-[11px] text-gray-400">Position spare part inside frame &amp; tap Capture</p>
         </div>
         <button type="button" onclick="closeLiveCameraModal()" class="p-2 rounded-xl bg-charcoal hover:bg-graphite text-gray-300 hover:text-white transition text-xs font-bold">✕</button>
       </div>
@@ -168,10 +169,10 @@
       <div class="flex flex-col items-center mb-5">
         <div class="w-32 h-32 rounded-full bg-black border-2 border-gold/60 flex items-center justify-center mb-3 shadow-2xl gold-shadow overflow-hidden" data-s3-logo-slot="login"></div>
         <h1 class="text-2xl sm:text-3xl font-black tracking-tight gold-text-gradient">S3 MOTORS POS</h1>
-        <p class="text-xs text-gold/80 font-semibold tracking-widest uppercase mt-0.5">Bike & Three Wheel Parts</p>
+        <p class="text-xs text-gold/80 font-semibold tracking-widest uppercase mt-0.5">Bike &amp; Three Wheel Parts</p>
         <div id="cloud-status-badge" class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-charcoal border border-gold/25 text-[11px] text-gray-300">
           <span id="cloud-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="cloud-status-text">Cloud & Real-Time Sync Ready</span>
+          <span id="cloud-status-text">Cloud &amp; Real-Time Sync Ready</span>
         </div>
       </div>
 
@@ -273,16 +274,16 @@
           <span>📦</span> <span>Stock Inventory</span>
         </button>
         <button data-tab="history" onclick="switchTab('history')" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition flex items-center gap-1.5">
-          <span>🧾</span> <span>Bills & Customers</span>
+          <span>🧾</span> <span>Bills &amp; Customers</span>
         </button>
         <button data-tab="returns" onclick="switchTab('returns')" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition flex items-center gap-1.5">
-          <span>↩️</span> <span>Returns & Refunds</span>
+          <span>↩️</span> <span>Returns &amp; Refunds</span>
         </button>
         <button data-tab="purchases" onclick="switchTab('purchases')" class="admin-only-nav hidden nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition flex items-center gap-1.5">
-          <span>🚚</span> <span>Suppliers & Purchases</span>
+          <span>🚚</span> <span>Suppliers &amp; Purchases</span>
         </button>
         <button data-tab="reports" onclick="switchTab('reports')" class="admin-only-nav hidden nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition flex items-center gap-1.5">
-          <span>📊</span> <span>Profit & Audit</span>
+          <span>📊</span> <span>Profit &amp; Audit</span>
         </button>
       </nav>
     </header>
@@ -382,7 +383,7 @@
               </div>
 
               <button id="complete-sale-btn" onclick="completeSale()" class="w-full py-3.5 rounded-xl gold-gradient text-obsidian font-extrabold text-sm shadow-lg hover:opacity-95 active:scale-[0.99] transition flex items-center justify-center gap-2">
-                <span>✅ Complete Sale & Auto-Download PDF</span>
+                <span>✅ Complete Sale &amp; Auto-Download PDF</span>
               </button>
             </div>
           </div>
@@ -502,7 +503,7 @@
               <thead>
                 <tr class="bg-charcoal text-gold border-b border-gold/25">
                   <th class="p-3">Code / Rack</th>
-                  <th class="p-3">Item & Vehicle Model</th>
+                  <th class="p-3">Item &amp; Vehicle Model</th>
                   <th class="p-3">Brand / Category</th>
                   <th class="p-3 text-center">Stock</th>
                   <th class="p-3 text-right admin-cost-col hidden">Cost Price</th>
@@ -521,7 +522,7 @@
         <div class="bg-onyx border border-gold/25 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 justify-between items-center">
           <input type="text" id="bills-search" oninput="renderBillsHistory()" placeholder="Search Bill Number (INV-...), Customer Name, or Phone Number..." class="w-full sm:w-96 px-4 py-2.5 rounded-xl bg-obsidian border border-gold/25 text-sm text-white focus:border-gold focus:outline-none" />
           <select id="bills-payment-filter" onchange="renderBillsHistory()" class="w-full sm:w-auto px-3 py-2.5 rounded-xl bg-obsidian border border-gold/25 text-sm text-gray-200">
-            <option value="">All Sales (Cash & Credit)</option>
+            <option value="">All Sales (Cash &amp; Credit)</option>
             <option value="Cash">Cash Sales Only</option>
             <option value="Credit">Credit Sales Only</option>
           </select>
@@ -532,7 +533,7 @@
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
                 <tr class="bg-charcoal text-gold border-b border-gold/25">
-                  <th class="p-3">Bill No & Date</th>
+                  <th class="p-3">Bill No &amp; Date</th>
                   <th class="p-3">Customer</th>
                   <th class="p-3">Items</th>
                   <th class="p-3">Payment</th>
@@ -550,7 +551,7 @@
       <!-- ==================== TAB 4: RETURNS & REFUNDS ==================== -->
       <section id="tab-returns" class="tab-panel hidden space-y-5">
         <div class="bg-onyx border border-gold/30 rounded-2xl p-4 sm:p-6">
-          <h2 class="text-base sm:text-lg font-bold text-gold mb-1">↩️ Sales Return & Restock</h2>
+          <h2 class="text-base sm:text-lg font-bold text-gold mb-1">↩️ Sales Return &amp; Restock</h2>
           <p class="text-xs text-gray-400 mb-4">Search bill number, select returned items, calculate refund, and restock items automatically.</p>
 
           <div class="flex flex-col sm:flex-row gap-2.5 mb-4">
@@ -566,7 +567,7 @@
                 Total Refund Amount: <span id="return-refund-total" class="font-mono text-lg text-gold">Rs. 0.00</span>
               </div>
               <button onclick="processReturnSubmission()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl gold-gradient text-obsidian font-extrabold text-sm shadow-lg hover:opacity-95 transition">
-                ✅ Process Return & Restock
+                ✅ Process Return &amp; Restock
               </button>
             </div>
           </div>
@@ -639,7 +640,7 @@
               Total Purchase Bill Cost: <span id="pur-total-cost" class="font-mono text-lg text-gold">Rs. 0.00</span>
             </div>
             <button onclick="savePurchaseBill()" class="w-full sm:w-auto px-6 py-3 rounded-xl gold-gradient text-obsidian font-extrabold text-sm shadow-lg hover:opacity-95 transition">
-              ✅ Save Purchase Bill & Update Stock
+              ✅ Save Purchase Bill &amp; Update Stock
             </button>
           </div>
         </div>
@@ -651,7 +652,7 @@
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-charcoal text-gold border-b border-gold/20">
-                  <th class="p-2.5">Date & Ref</th>
+                  <th class="p-2.5">Date &amp; Ref</th>
                   <th class="p-2.5">Supplier</th>
                   <th class="p-2.5">Purchased Items</th>
                   <th class="p-2.5 text-right">Total Cost</th>
@@ -668,7 +669,7 @@
         <!-- Period Filter -->
         <div class="flex flex-wrap items-center justify-between gap-3 bg-onyx border border-gold/25 rounded-2xl p-4">
           <div>
-            <h2 class="text-base font-bold text-gold">📊 Net Profit & Sales Analytics (Admin Only)</h2>
+            <h2 class="text-base font-bold text-gold">📊 Net Profit &amp; Sales Analytics (Admin Only)</h2>
             <p class="text-xs text-gray-400">Selling Price - Cost Price - Discounts - Return Profit Adjustments</p>
           </div>
           <div class="flex gap-1.5 bg-obsidian p-1 rounded-xl border border-gold/20">
@@ -727,12 +728,12 @@
 
         <!-- Complete Stock Movement & User Audit Log -->
         <div class="bg-onyx border border-gold/25 rounded-2xl p-4 sm:p-5">
-          <h3 class="text-sm font-bold text-gold mb-3">🛡️ Complete Audit Trail & Stock Movement Log</h3>
+          <h3 class="text-sm font-bold text-gold mb-3">🛡️ Complete Audit Trail &amp; Stock Movement Log</h3>
           <div class="overflow-x-auto max-h-80 overflow-y-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-charcoal text-gold border-b border-gold/20 sticky top-0">
-                  <th class="p-2.5">Date & Time</th>
+                  <th class="p-2.5">Date &amp; Time</th>
                   <th class="p-2.5">User</th>
                   <th class="p-2.5">Action Type</th>
                   <th class="p-2.5">Item / Reference</th>
@@ -785,7 +786,7 @@
           <!-- Firebase Cloud Sync Configuration -->
           <div class="bg-onyx border border-gold/30 rounded-2xl p-5 space-y-3">
             <h2 class="text-base font-bold text-gold">☁️ Firebase Cloud Realtime Sync</h2>
-            <p class="text-xs text-gray-400">Paste your Firebase Web App Config JSON to sync Stock, Sales & Transactions live across phones and computers.</p>
+            <p class="text-xs text-gray-400">Paste your Firebase Web App Config JSON to sync Stock, Sales &amp; Transactions live across phones and computers.</p>
             <textarea id="firebase-config-input" rows="4" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","databaseURL":"..."}' class="w-full p-3 rounded-xl bg-obsidian border border-gold/25 text-xs font-mono text-gray-200 focus:border-gold focus:outline-none"></textarea>
             <div class="flex gap-2">
               <button onclick="saveFirebaseConfig()" class="px-4 py-2 rounded-xl gold-gradient text-obsidian font-bold text-xs">Connect Firebase Cloud</button>
@@ -795,7 +796,7 @@
 
           <!-- Daily Auto-Backup & Restore -->
           <div class="bg-onyx border border-gold/30 rounded-2xl p-5 space-y-3">
-            <h2 class="text-base font-bold text-gold">💾 Daily Backup & System Restore</h2>
+            <h2 class="text-base font-bold text-gold">💾 Daily Backup &amp; System Restore</h2>
             <p class="text-xs text-gray-400">Automatic daily snapshot runs every 24 hours. You can also trigger an instant backup or restore from a JSON file.</p>
             <div class="text-xs text-emerald-400 bg-obsidian px-3 py-2 rounded-xl border border-emerald-500/20">
               Last Auto-Backup: <span id="last-backup-time" class="font-mono">Checking...</span>
@@ -923,7 +924,7 @@
 
         <!-- Ribbon Banner -->
         <path d="M22 160 L218 160 L212 180 L28 180 Z" fill="url(#s3Gold)"/>
-        <text x="120" y="173.5" text-anchor="middle" fill="#050505" font-family="Inter, sans-serif" font-weight="900" font-size="10" letter-spacing="1">★ BIKE & THREE WHEEL PARTS ★</text>
+        <text x="120" y="173.5" text-anchor="middle" fill="#050505" font-family="Inter, sans-serif" font-weight="900" font-size="10" letter-spacing="1">★ BIKE &amp; THREE WHEEL PARTS ★</text>
 
         <!-- Piston & Alloy Wheel (Bottom) -->
         <g transform="translate(120, 203)">
@@ -3148,10 +3149,10 @@
 
     function escapeHtml(str) {
       return String(str ?? '')
-        .replace(/&/g, '&')
-        .replace(/</g, '<')
-        .replace(/>/g, '>')
-        .replace(/"/g, '"');
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
 
     function startHeaderClock() {
