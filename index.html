@@ -261,7 +261,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 pb-24 lg:pb-6">
 
       <!-- ==================== TAB 1: NEW SALE (POS) ==================== -->
       <section id="tab-pos" class="tab-panel grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -284,7 +284,7 @@
         </div>
 
         <!-- Right: Current Bill Cart -->
-        <div class="lg:col-span-5">
+        <div id="pos-bill-panel" class="lg:col-span-5 scroll-mt-24">
           <div class="bg-onyx border border-gold/35 rounded-2xl p-4 sm:p-5 shadow-xl sticky top-28">
             <div class="flex items-center justify-between pb-3 border-b border-gold/20">
               <div class="flex items-center gap-2.5">
@@ -777,6 +777,27 @@
     </main>
   </div>
 
+
+  <!-- ==================== MOBILE FLOATING QUICK BILL BAR ==================== -->
+  <div id="mobile-cart-bar" class="lg:hidden hidden fixed bottom-0 inset-x-0 z-50 bg-onyx/95 backdrop-blur-md border-t-2 border-gold/60 px-3 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.85)]">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <button type="button" onclick="scrollToCurrentBill()" class="flex items-center gap-2 text-left min-w-0 flex-1 active:scale-95 transition">
+        <div class="w-9 h-9 rounded-xl bg-gold/20 border border-gold/40 flex items-center justify-center text-gold font-black text-sm shrink-0">
+          🛒
+        </div>
+        <div class="min-w-0">
+          <div class="text-[11px] font-bold text-gray-300 leading-tight">
+            <span id="mobile-bar-count" class="text-gold font-black">0</span> Items in Bill <span class="text-[10px] text-gold/80 underline ml-1">(View ↓)</span>
+          </div>
+          <div id="mobile-bar-total" class="text-sm font-black font-mono text-emerald-400 truncate">Rs. 0.00</div>
+        </div>
+      </button>
+      <button type="button" id="mobile-complete-sale-btn" onclick="completeSale()" class="px-4 py-2.5 rounded-xl gold-gradient text-obsidian font-extrabold text-xs shadow-lg hover:opacity-95 active:scale-95 transition shrink-0 flex items-center gap-1.5">
+        <span>✅ Complete Sale</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1207,14 +1228,14 @@
 
     // ==================== FIREBASE CLOUD & REALTIME SYNC ====================
     // Optional default Firebase Web Config (paste your JSON object here so every phone/browser connects automatically)
-   const firebaseConfig = {
-  apiKey: "AIzaSyBI5-cHVnJYMY7_APISxtMUhNC70lqrOyo",
-  authDomain: "s3-motors-pos.firebaseapp.com",
-  projectId: "s3-motors-pos",
-  storageBucket: "s3-motors-pos.firebasestorage.app",
-  messagingSenderId: "1071503701636",
-  appId: "1:1071503701636:web:8f217ca4e9ce05d18574d1"
-};
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBI5-cHVnJYMY7_APISxtMUhNC70lqrOyo",
+      authDomain: "s3-motors-pos.firebaseapp.com",
+      projectId: "s3-motors-pos",
+      storageBucket: "s3-motors-pos.firebasestorage.app",
+      messagingSenderId: "1071503701636",
+      appId: "1:1071503701636:web:8f217ca4e9ce05d18574d1"
+    };
 
     function getEffectiveFirebaseConfigRaw() {
       const saved = (localStorage.getItem('s3_firebase_config') || '').trim();
@@ -1348,7 +1369,12 @@
 
     window.addEventListener('storage', (e) => {
       if (e.key === STORAGE_KEY && e.newValue) {
-        appState = JSON.parse(e.newValue);
+        const parsed = JSON.parse(e.newValue);
+        const currentInv = appState.inventory || [];
+        appState = { ...appState, ...parsed };
+        if (!appState.inventory || appState.inventory.length === 0) {
+          appState.inventory = currentInv;
+        }
         if (currentUserRole) refreshAllViews();
       }
     });
@@ -1430,6 +1456,7 @@
     function logoutUser() {
       currentUserRole = null;
       cart = [];
+      updateMobileCartBar();
       document.getElementById('app-shell').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
       showToast('Logged out safely. All cloud data remains protected.', 'info');
@@ -1480,6 +1507,8 @@
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
       const targetPanel = document.getElementById(`tab-${tabName}`);
       if (targetPanel) targetPanel.classList.remove('hidden');
+
+      updateMobileCartBar();
 
       document.querySelectorAll('.nav-tab').forEach(btn => {
         if (btn.dataset.tab === tabName) {
@@ -1931,6 +1960,9 @@
         });
       }
       renderCart();
+      if (window.innerWidth < 1024) {
+        showToast(`Added: ${stockItem.name} (${cart.reduce((s, i) => s + i.qty, 0)} in bill)`, 'success');
+      }
     }
 
     function updateCartItemQty(itemId, newQty) {
@@ -1993,11 +2025,37 @@
       return { subtotal, discountAmount, grandTotal };
     }
 
+    function scrollToCurrentBill() {
+      const billPanel = document.getElementById('pos-bill-panel');
+      if (billPanel) {
+        billPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function updateMobileCartBar() {
+      const bar = document.getElementById('mobile-cart-bar');
+      if (!bar) return;
+      const posTab = document.getElementById('tab-pos');
+      const isPosActive = currentUserRole && posTab && !posTab.classList.contains('hidden');
+      if (!isPosActive || !cart.length) {
+        bar.classList.add('hidden');
+        return;
+      }
+      const totalQty = cart.reduce((s, i) => s + Number(i.qty || 0), 0);
+      const { grandTotal } = calculateCartTotals();
+      const countEl = document.getElementById('mobile-bar-count');
+      const totalEl = document.getElementById('mobile-bar-total');
+      if (countEl) countEl.textContent = totalQty;
+      if (totalEl) totalEl.textContent = formatCurrency(grandTotal);
+      bar.classList.remove('hidden');
+    }
+
     function updateCartTotals() {
       const { subtotal, discountAmount, grandTotal } = calculateCartTotals();
       document.getElementById('pos-subtotal').textContent = formatCurrency(subtotal);
       document.getElementById('pos-discount-display').textContent = `- ${formatCurrency(discountAmount)}`;
       document.getElementById('pos-grand-total').textContent = formatCurrency(grandTotal);
+      updateMobileCartBar();
     }
 
     function updateNextBillPreview() {
@@ -2016,14 +2074,34 @@
 
       isProcessingSale = true;
       const btn = document.getElementById('complete-sale-btn');
-      btn.disabled = true;
-      btn.classList.add('opacity-60');
+      const mobBtn = document.getElementById('mobile-complete-sale-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+      }
+      if (mobBtn) {
+        mobBtn.disabled = true;
+        mobBtn.classList.add('opacity-60');
+      }
 
       try {
         for (const cItem of cart) {
-          const liveStock = appState.inventory.find(i => i.id === cItem.itemId);
-          if (!liveStock || liveStock.qty < cItem.qty) {
-            throw new Error(`Insufficient stock for ${cItem.name}. Available: ${liveStock ? liveStock.qty : 0}`);
+          let currentAvailable = 0;
+          if (firestoreDb) {
+            const itemSnap = await firestoreDb
+              .collection('s3_motors_pos')
+              .doc('main_store')
+              .collection('items')
+              .doc(cItem.itemId)
+              .get();
+            currentAvailable = itemSnap.exists ? Number(itemSnap.data().qty || 0) : 0;
+          } else {
+            const liveStock = appState.inventory.find(i => i.id === cItem.itemId);
+            currentAvailable = liveStock ? Number(liveStock.qty || 0) : 0;
+          }
+
+          if (currentAvailable < cItem.qty) {
+            throw new Error(`Insufficient stock for ${cItem.name}. Available: ${currentAvailable}`);
           }
         }
 
@@ -2050,23 +2128,48 @@
         };
 
         if (firestoreDb) {
-          const docRef = firestoreDb.collection('s3_motors_pos').doc('main_store');
-          await firestoreDb.runTransaction(async (transaction) => {
-            const snap = await transaction.get(docRef);
-            let stateToMutate = snap.exists && snap.data().payload ? JSON.parse(snap.data().payload) : appState;
+          const storeDocRef = firestoreDb.collection('s3_motors_pos').doc('main_store');
+          const itemsColRef = storeDocRef.collection('items');
 
+          await firestoreDb.runTransaction(async (transaction) => {
+            const itemRefsAndCart = [];
             for (const cItem of billRecord.items) {
-              const target = stateToMutate.inventory.find(i => i.id === cItem.itemId);
-              if (!target || target.qty < cItem.qty) {
-                throw new Error(`Concurrent sale conflict: ${cItem.name} stock insufficient.`);
-              }
-              target.qty -= cItem.qty;
-              await docRef.collection('items').doc(target.id).set(target, { merge: true });
+              const iRef = itemsColRef.doc(cItem.itemId);
+              const iSnap = await transaction.get(iRef);
+              itemRefsAndCart.push({ cItem, iRef, iSnap });
             }
-            stateToMutate.nextBillSeq = (stateToMutate.nextBillSeq || 1) + 1;
-            stateToMutate.bills.unshift(billRecord);
+
+            const storeSnap = await transaction.get(storeDocRef);
+            let metaState = buildCompactMetaState();
+            if (storeSnap.exists && storeSnap.data() && storeSnap.data().payload) {
+              try {
+                const parsedPayload = JSON.parse(storeSnap.data().payload);
+                metaState = { ...metaState, ...parsedPayload, inventory: [] };
+              } catch (e) {}
+            }
+
+            for (const entry of itemRefsAndCart) {
+              if (!entry.iSnap.exists) {
+                throw new Error(`Concurrent sale conflict: ${entry.cItem.name} stock insufficient.`);
+              }
+              const latestData = entry.iSnap.data();
+              const latestQty = Number(latestData.qty || 0);
+              if (latestQty < entry.cItem.qty) {
+                throw new Error(`Concurrent sale conflict: ${entry.cItem.name} stock insufficient.`);
+              }
+              const nextQty = latestQty - entry.cItem.qty;
+              transaction.set(entry.iRef, { ...latestData, qty: nextQty }, { merge: true });
+
+              const localInvItem = appState.inventory.find(i => i.id === entry.cItem.itemId);
+              if (localInvItem) localInvItem.qty = nextQty;
+            }
+
+            metaState.nextBillSeq = (Number(metaState.nextBillSeq) || 1) + 1;
+            metaState.bills = [billRecord, ...(metaState.bills || [])];
+            metaState.auditLogs = metaState.auditLogs || [];
+
             billRecord.items.forEach(bi => {
-              stateToMutate.auditLogs.unshift({
+              metaState.auditLogs.unshift({
                 id: 'log_' + Date.now() + '_' + bi.code,
                 timestamp: now,
                 user: currentUserRole.toUpperCase(),
@@ -2075,25 +2178,31 @@
                 qtyChange: `-${bi.qty}`
               });
             });
+            metaState.auditLogs = metaState.auditLogs.slice(0, 100);
 
-            appState = stateToMutate;
-            transaction.set(docRef, {
-              payload: JSON.stringify(appState),
+            appState.nextBillSeq = metaState.nextBillSeq;
+            appState.bills = metaState.bills;
+            appState.auditLogs = metaState.auditLogs;
+
+            transaction.set(storeDocRef, {
+              payload: JSON.stringify(metaState),
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
           });
+
+          await idbPutItems(appState.inventory);
         } else {
           for (const cItem of billRecord.items) {
             const target = appState.inventory.find(i => i.id === cItem.itemId);
-            target.qty -= cItem.qty;
-            idbPutItems([target]);
+            target.qty = Number(target.qty || 0) - cItem.qty;
+            await idbPutItems([target]);
             logAudit('SALE_DEDUCTED', `${billNumber} | ${cItem.code} - ${cItem.name}`, `-${cItem.qty}`);
           }
           appState.nextBillSeq += 1;
           appState.bills.unshift(billRecord);
         }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        saveLocalMetaOnly();
 
         cart = [];
         document.getElementById('pos-cust-name').value = '';
@@ -2109,8 +2218,14 @@
         showToast(err.message || 'Sale failed!', 'error');
       } finally {
         isProcessingSale = false;
-        btn.disabled = false;
-        btn.classList.remove('opacity-60');
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+        }
+        if (mobBtn) {
+          mobBtn.disabled = false;
+          mobBtn.classList.remove('opacity-60');
+        }
       }
     }
 
@@ -2417,7 +2532,8 @@
 
           const stockTarget = appState.inventory.find(i => i.id === orig.itemId);
           if (stockTarget) {
-            stockTarget.qty += qty;
+            stockTarget.qty = Number(stockTarget.qty || 0) + qty;
+            syncItemToCloud(stockTarget);
           }
           logAudit('RETURN_RESTOCKED', `${activeReturnBill.billNumber} | ${orig.code} - ${orig.name}`, `+${qty}`);
         }
@@ -2543,8 +2659,9 @@
       purchaseDraftLines.forEach(line => {
         const stockItem = appState.inventory.find(i => i.id === line.itemId);
         if (stockItem) {
-          stockItem.qty += line.qty;
+          stockItem.qty = Number(stockItem.qty || 0) + line.qty;
           stockItem.costPrice = line.unitCost;
+          syncItemToCloud(stockItem);
           logAudit('PURCHASE_ADDED', `${invoiceRef} (${supplierName}) | ${line.code} - ${line.name}`, `+${line.qty}`);
         }
       });
@@ -2745,7 +2862,7 @@
         { createdAt: nowIso, billCount: appState.bills.length, itemCount: appState.inventory.length },
         ...(appState.dailySnapshots || []).slice(0, 6)
       ];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      saveLocalMetaOnly();
       updateBackupTimestampUI();
       if (manualToast) {
         showToast('Cloud Backup snapshot saved successfully!', 'success');
@@ -2780,8 +2897,14 @@
           if (!parsed.inventory || !parsed.bills) {
             throw new Error('Invalid S3 MOTORS backup file.');
           }
-          showConfirm('Restore Database Backup', 'This will replace current inventory and sales records with the selected backup file. Continue?', () => {
+          showConfirm('Restore Database Backup', 'This will replace current inventory and sales records with the selected backup file. Continue?', async () => {
             appState = { ...appState, ...parsed };
+            if (Array.isArray(appState.inventory) && appState.inventory.length > 0) {
+              await idbPutItems(appState.inventory);
+              for (const invItem of appState.inventory) {
+                await syncItemToCloud(invItem);
+              }
+            }
             logAudit('BACKUP_RESTORED', file.name, '0');
             saveLocalState();
             refreshAllViews();
