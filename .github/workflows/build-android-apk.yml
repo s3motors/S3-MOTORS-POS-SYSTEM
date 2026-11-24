@@ -55,6 +55,8 @@ jobs:
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.CAMERA" />
+              <uses-feature android:name="android.hardware.camera" android:required="false" />
               <application
                   android:allowBackup="false"
                   android:label="S3 Motors POS"
@@ -92,6 +94,10 @@ jobs:
 
           import android.app.Activity;
           import android.os.Bundle;
+          import android.Manifest;
+          import android.content.pm.PackageManager;
+          import android.webkit.PermissionRequest;
+          import android.os.Build;
           import android.view.View;
           import android.webkit.WebChromeClient;
           import android.webkit.WebView;
@@ -108,7 +114,9 @@ jobs:
           public class MainActivity extends Activity {
               private WebView webView;
               private ValueCallback<Uri[]> filePathCallback;
+              private PermissionRequest pendingWebPermissionRequest;
               private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
+              private static final int CAMERA_PERMISSION_REQUEST_CODE = 1002;
               private static final String POS_URL =
                   "https://s3motors.github.io/S3-MOTORS-POS-SYSTEM/";
 
@@ -130,6 +138,40 @@ jobs:
                   settings.setSupportMultipleWindows(false);
 
                   webView.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public void onPermissionRequest(final PermissionRequest request) {
+                          runOnUiThread(() -> {
+                              boolean wantsVideo = false;
+                              for (String resource : request.getResources()) {
+                                  if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)) {
+                                      wantsVideo = true;
+                                      break;
+                                  }
+                              }
+
+                              if (!wantsVideo) {
+                                  request.deny();
+                                  return;
+                              }
+
+                              if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                                      || checkSelfPermission(Manifest.permission.CAMERA)
+                                      == PackageManager.PERMISSION_GRANTED) {
+                                  request.grant(new String[] {
+                                      PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                                  });
+                              } else {
+                                  if (pendingWebPermissionRequest != null) {
+                                      pendingWebPermissionRequest.deny();
+                                  }
+                                  pendingWebPermissionRequest = request;
+                                  requestPermissions(
+                                      new String[] { Manifest.permission.CAMERA },
+                                      CAMERA_PERMISSION_REQUEST_CODE);
+                              }
+                          });
+                      }
+
                       @Override
                       public boolean onShowFileChooser(
                               WebView view,
@@ -174,6 +216,24 @@ jobs:
                   setContentView(webView);
                   if (savedInstanceState == null) webView.loadUrl(POS_URL);
                   else webView.restoreState(savedInstanceState);
+              }
+
+              @Override
+              public void onRequestPermissionsResult(
+                      int requestCode, String[] permissions, int[] grantResults) {
+                  super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                  if (requestCode == CAMERA_PERMISSION_REQUEST_CODE
+                          && pendingWebPermissionRequest != null) {
+                      if (grantResults.length > 0
+                              && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                          pendingWebPermissionRequest.grant(new String[] {
+                              PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                          });
+                      } else {
+                          pendingWebPermissionRequest.deny();
+                      }
+                      pendingWebPermissionRequest = null;
+                  }
               }
 
               @Override
@@ -239,6 +299,10 @@ jobs:
                       filePathCallback.onReceiveValue(null);
                       filePathCallback = null;
                   }
+                  if (pendingWebPermissionRequest != null) {
+                      pendingWebPermissionRequest.deny();
+                      pendingWebPermissionRequest = null;
+                  }
                   if (webView != null) {
                       webView.destroy();
                       webView = null;
@@ -265,6 +329,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: S3-Motors-POS-APK-v1.2
+          name: S3-Motors-POS-APK-v1.3
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
